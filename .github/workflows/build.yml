@@ -1,0 +1,25 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Import GPG private key
+        uses: crazy-max/ghaction-import-gpg@v4.1.0
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Encrypt file
+        run: |
+          dd if=/dev/zero of=file bs=1M count=10
+          gpg -r growtopiajaw@gmail.com --encrypt file
+          gpg --decrypt file.gpg > file
