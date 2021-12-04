@@ -12,14 +12,31 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Import GPG private key
-        uses: crazy-max/ghaction-import-gpg@v4.1.0
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-      - name: Encrypt file
+      - name: Install 7-Zip and aria2
         run: |
-          dd if=/dev/zero of=file bs=1M count=10
-          gpg -r growtopiajaw@gmail.com --encrypt file
-          gpg --decrypt file.gpg > file
+          sudo apt update
+          sudo apt install p7zip* aria2 -y
+
+      - name: Compress and encrypt file
+        env:
+          CODE: ${{ secrets.CODE }}
+        run: |
+          aria2c -s 16 -x 16 https://github.com/growtopiajaw/minecraft/releases/download/v1.0/minecraft.zip.001
+          aria2c -s 16 -x 16 https://github.com/growtopiajaw/minecraft/releases/download/v1.0/minecraft.zip.002
+          aria2c -s 16 -x 16 https://github.com/growtopiajaw/minecraft/releases/download/v1.0/minecraft.zip.003
+          aria2c -s 16 -x 16 https://github.com/growtopiajaw/minecraft/releases/download/v1.0/minecraft.zip.004
+          aria2c -s 16 -x 16 https://github.com/growtopiajaw/minecraft/releases/download/v1.0/minecraft.zip.005
+          aria2c -s 16 -x 16 https://github.com/growtopiajaw/minecraft/releases/download/v1.0/minecraft.zip.006
+          aria2c -s 16 -x 16 https://github.com/growtopiajaw/minecraft/releases/download/v1.0/minecraft.zip.007
+          aria2c -s 16 -x 16 https://github.com/growtopiajaw/minecraft/releases/download/v1.0/minecraft.zip.008
+          7z x minecraft.zip.001 -p"$CODE"
+          rm -rf minecraft.zip.0*
+          7z -v1G a minecraft.zip minecraft -mx=9 -tzip -p"$CODE"
+
+      - name: Upload release
+        uses: svenstaro/upload-release-action@2.2.1
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: minecraft.zip.0*
+          tag: v2.0
+          file_glob: true
